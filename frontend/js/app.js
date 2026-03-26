@@ -4,8 +4,42 @@
  */
 
 const STORAGE_KEY = "ecs_dashboard_queue_v1";
+const THEME_KEY = "ecs_theme";
 
 const PRIORITY_ORDER = { critical: 4, urgent: 3, medium: 2, low: 1 };
+
+function getPreferredTheme() {
+  const s = localStorage.getItem(THEME_KEY);
+  if (s === "light" || s === "dark") return s;
+  return window.matchMedia("(prefers-color-scheme: light)").matches
+    ? "light"
+    : "dark";
+}
+
+function syncThemeButton() {
+  const t = document.documentElement.dataset.theme;
+  const btn = document.getElementById("themeToggle");
+  if (!btn) return;
+  const label = btn.querySelector(".theme-toggle__text");
+  const isDark = t === "dark";
+  if (label) label.textContent = isDark ? "Light" : "Dark";
+  btn.setAttribute("aria-pressed", isDark ? "true" : "false");
+  btn.setAttribute(
+    "aria-label",
+    isDark ? "Switch to light theme" : "Switch to dark theme"
+  );
+}
+
+function applyTheme(theme) {
+  if (theme !== "light" && theme !== "dark") return;
+  document.documentElement.dataset.theme = theme;
+  localStorage.setItem(THEME_KEY, theme);
+  syncThemeButton();
+}
+
+function initTheme() {
+  applyTheme(getPreferredTheme());
+}
 
 function normalizePriority(p) {
   if (p == null) return null;
@@ -297,7 +331,7 @@ function render() {
     els.queueBody.appendChild(card);
   }
 
-  els.emptyState.classList.toggle("empty--show", viewList.length === 0);
+  els.emptyState.classList.toggle("void--show", viewList.length === 0);
 
   els.queueBody.querySelectorAll(".msg__remove[data-remove]").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -421,4 +455,11 @@ els.btnClearAll.addEventListener("click", () => {
   render();
 });
 
+document.getElementById("themeToggle")?.addEventListener("click", () => {
+  const next =
+    document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+  applyTheme(next);
+});
+
+initTheme();
 render();

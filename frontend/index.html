@@ -1,21 +1,48 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Emergency Communication</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@8..60,600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,600;0,700;1,600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/dashboard.css" />
+  <script>
+    (function () {
+      try {
+        var k = "ecs_theme";
+        var s = localStorage.getItem(k);
+        var t =
+          s === "light" || s === "dark"
+            ? s
+            : matchMedia("(prefers-color-scheme: light)").matches
+              ? "light"
+              : "dark";
+        document.documentElement.dataset.theme = t;
+      } catch (e) {}
+    })();
+  </script>
 </head>
 <body>
-  <div class="backdrop" aria-hidden="true"></div>
   <div class="app">
-    <header class="header">
-      <div class="header__intro">
-        <h1 class="header__title">Emergency Communication</h1>
-        <p class="header__desc">Prioritized message queue, stored locally in your browser.</p>
+    <header class="masthead">
+      <div class="masthead__row">
+        <div>
+          <p class="masthead__kicker">Local queue</p>
+          <h1 class="masthead__title">Emergency Communication</h1>
+          <p class="masthead__lede">Prioritized messages · stored in your browser</p>
+        </div>
+        <button type="button" class="masthead__theme" id="themeToggle" aria-pressed="true" aria-label="Switch to light theme">
+          <svg class="masthead__theme-icon masthead__theme-icon--sun" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+            <circle cx="12" cy="12" r="4" />
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2" />
+          </svg>
+          <svg class="masthead__theme-icon masthead__theme-icon--moon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+          </svg>
+          <span class="masthead__theme-label theme-toggle__text" aria-hidden="true">Light</span>
+        </button>
       </div>
     </header>
 
@@ -24,46 +51,55 @@
       <p id="criticalBannerDetail" class="alert__text"></p>
     </section>
 
-    <main class="main">
-      <section class="panel panel--compose" aria-labelledby="compose-heading">
-        <h2 id="compose-heading" class="h2">Messages</h2>
-        <p class="help">One message per line. Use the buttons to queue without classifying, or classify immediately.</p>
-        <textarea id="messageInput" class="field field--area" rows="5" placeholder="Type or paste messages…"></textarea>
-        <div class="actions">
-          <button type="button" id="btnEnqueue" class="btn btn--secondary">Add to queue</button>
-          <button type="button" id="btnClassify" class="btn btn--primary">Classify and add</button>
-          <button type="button" id="btnClassifyPending" class="btn btn--secondary" hidden>Classify pending</button>
+    <main class="sheet">
+      <section class="block block--compose" aria-labelledby="compose-heading">
+        <header class="block__head">
+          <span class="block__index" aria-hidden="true">01</span>
+          <h2 id="compose-heading" class="block__title">Messages</h2>
+        </header>
+        <p class="block__note">One per line. Queue raw or classify in one step.</p>
+        <textarea id="messageInput" class="input input--tall" rows="5" placeholder="Enter text…"></textarea>
+        <div class="toolbar">
+          <button type="button" id="btnEnqueue" class="btn btn--outline">Add to queue</button>
+          <button type="button" id="btnClassify" class="btn btn--solid">Classify and add</button>
+          <button type="button" id="btnClassifyPending" class="btn btn--outline" hidden>Classify pending</button>
         </div>
         <p id="apiStatus" class="status" role="status"></p>
       </section>
 
-      <aside class="panel panel--stats" aria-labelledby="stats-heading">
-        <h2 id="stats-heading" class="h2">Statistics</h2>
-        <p class="help help--tight">For the filtered list only.</p>
-        <div class="kpi">
-          <div class="kpi__item">
-            <span class="kpi__label">Shown</span>
-            <span id="statTotal" class="kpi__value">0</span>
+      <aside class="block block--stats" aria-labelledby="stats-heading">
+        <header class="block__head">
+          <span class="block__index" aria-hidden="true">02</span>
+          <h2 id="stats-heading" class="block__title">Statistics</h2>
+        </header>
+        <p class="block__note block__note--tight">Reflects current filters.</p>
+        <dl class="ledger">
+          <div class="ledger__row">
+            <dt class="ledger__term">Shown</dt>
+            <dd id="statTotal" class="ledger__val">0</dd>
           </div>
-          <div class="kpi__item">
-            <span class="kpi__label">Pending</span>
-            <span id="statPending" class="kpi__value">0</span>
+          <div class="ledger__row">
+            <dt class="ledger__term">Pending</dt>
+            <dd id="statPending" class="ledger__val">0</dd>
           </div>
-          <div class="kpi__item">
-            <span class="kpi__label">Avg. confidence</span>
-            <span id="statAvgConf" class="kpi__value">—</span>
+          <div class="ledger__row">
+            <dt class="ledger__term">Avg. confidence</dt>
+            <dd id="statAvgConf" class="ledger__val">—</dd>
           </div>
-        </div>
-        <h3 class="h3">By priority</h3>
+        </dl>
+        <h3 class="block__sub">By priority</h3>
         <ul id="statByPriority" class="stat-list" aria-label="Counts by priority"></ul>
       </aside>
 
-      <section class="panel panel--wide panel--filters" aria-labelledby="controls-heading">
-        <h2 id="controls-heading" class="h2">Filter and sort</h2>
+      <section class="block block--filters block--span" aria-labelledby="controls-heading">
+        <header class="block__head">
+          <span class="block__index" aria-hidden="true">03</span>
+          <h2 id="controls-heading" class="block__title">Filter &amp; sort</h2>
+        </header>
         <div class="row">
-          <label class="stack">
-            <span class="label">Priority</span>
-            <select id="filterPriority" class="field">
+          <label class="field">
+            <span class="field__lab">Priority</span>
+            <select id="filterPriority" class="input">
               <option value="all">All</option>
               <option value="critical">Critical</option>
               <option value="urgent">Urgent</option>
@@ -72,38 +108,41 @@
               <option value="pending">Pending only</option>
             </select>
           </label>
-          <label class="stack stack--grow">
-            <span class="label">Search</span>
-            <input type="search" id="filterSearch" class="field" placeholder="Search message text" autocomplete="off" />
+          <label class="field field--grow">
+            <span class="field__lab">Search</span>
+            <input type="search" id="filterSearch" class="input" placeholder="Filter by text" autocomplete="off" />
           </label>
         </div>
-        <div class="row row--end">
-          <label class="stack">
-            <span class="label">Sort by</span>
-            <select id="sortField" class="field">
+        <div class="row row--tools">
+          <label class="field">
+            <span class="field__lab">Sort by</span>
+            <select id="sortField" class="input">
               <option value="time">Time</option>
               <option value="priority">Priority</option>
               <option value="confidence">Confidence</option>
             </select>
           </label>
-          <label class="stack">
-            <span class="label">Order</span>
-            <select id="sortDir" class="field">
+          <label class="field">
+            <span class="field__lab">Order</span>
+            <select id="sortDir" class="input">
               <option value="desc">Descending</option>
               <option value="asc">Ascending</option>
             </select>
           </label>
-          <button type="button" id="btnClearAll" class="btn btn--quiet">Clear all</button>
+          <button type="button" id="btnClearAll" class="btn btn--ghost">Clear all</button>
         </div>
       </section>
 
-      <section class="panel panel--wide panel--queue" aria-labelledby="queue-heading">
-        <div class="queue-top">
-          <h2 id="queue-heading" class="h2">Queue</h2>
-          <span id="queueCount" class="meta">0 messages</span>
-        </div>
-        <div id="queueBody" class="queue" role="list"></div>
-        <p id="emptyState" class="empty">No messages yet.</p>
+      <section class="block block--queue block--span" aria-labelledby="queue-heading">
+        <header class="block__head block__head--inline">
+          <div class="block__head-left">
+            <span class="block__index" aria-hidden="true">04</span>
+            <h2 id="queue-heading" class="block__title">Queue</h2>
+          </div>
+          <span id="queueCount" class="tally">0 messages</span>
+        </header>
+        <div id="queueBody" class="inbox" role="list"></div>
+        <p id="emptyState" class="void">No messages yet.</p>
       </section>
     </main>
   </div>
